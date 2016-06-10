@@ -1,11 +1,13 @@
+require 'byebug'
+
 class Sudoku
     def initialize(board_string)
         @backtrack_array = board_string.to_s.split("").map { |digit| digit.to_i }
         @backtrack_board = @backtrack_array.each_slice(9).to_a
-        @board_horizontal = @backtrack_board.dup
-        @horizontal_arr = @backtrack_array.dup
+        @board_horizontal = Marshal.load(Marshal.dump(@backtrack_board))
+        @horizontal_arr = Marshal.load(Marshal.dump(@backtrack_array))
         @backtrack_squares = []
-        square_arr = @board_horizontal.dup
+        square_arr = Marshal.load(Marshal.dump(@board_horizontal))
         3.times do
             3.times do
                 temp_board = []
@@ -18,7 +20,7 @@ class Sudoku
             end
             square_arr = square_arr.drop(3)
         end
-        @board_squares = @backtrack_squares.dup
+        @board_squares = Marshal.load(Marshal.dump(@backtrack_squares))
         @counter = @horizontal_arr.count(0)
         @squares_x = [[0, 0, 0, 1, 1, 1, 2, 2, 2],
         [0, 0, 0, 1, 1, 1, 2, 2, 2],
@@ -92,20 +94,17 @@ class Sudoku
     end
     
     def solve!
-        run_through
-        @guess_counter = @horizontal_arr.count(0)
-        if @counter == 0
-            return @board_horizontal
-        end
         boards_check = false
         until boards_check == true
-            @board_horizontal = @backtrack_board.dup
-            @horizontal_arr = @backtrack_array.dup
-            @board_squares = @backtrack_squares.dup
-            
+            @board_horizontal = Marshal.load(Marshal.dump(@backtrack_board))
+            @horizontal_arr = Marshal.load(Marshal.dump(@backtrack_array))
+            @board_squares = Marshal.load(Marshal.dump(@backtrack_squares))
+            run_through
             @guess_counter = @horizontal_arr.count(0)
-            p @board_horizontal
-            p @backtrack_board
+            if @counter == 0
+                return @board_horizontal
+            end
+            @guess_counter = @horizontal_arr.count(0)
             zeros = []
             @horizontal_arr.each_with_index {|value, place| zeros << place if value == 0}
             zeros.each do |x|
@@ -126,8 +125,6 @@ class Sudoku
                     boards_check = true
                 end
             end
-                @horizontal_arr = @board_horizontal.flatten
-                p @board_horizontal
         end
     end
     
@@ -143,7 +140,7 @@ end
 # String#chomp to remove them.
 #board_string = File.readlines('sample.unsolved.txt').first.chomp
 
-game = Sudoku.new('300000000050703008000028070700000043000000000003904105400300800100040000968000200')
+game = Sudoku.new('096040001100060004504810390007950043030080000405023018010630059059070830003590007')
 
 # Remember: this will just fill out what it can and not "guess"
 game.solve!
